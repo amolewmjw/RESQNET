@@ -1,0 +1,23 @@
+
+> resqnet-frontend@0.1.0 test:e2e
+> playwright test
+
+
+Running 4 tests using 1 worker
+
+  ✓  1 tests/dashboard.spec.ts:8:1 › loads live backend data and resets all three scenarios (1.2s)
+  ✓  2 tests/dashboard.spec.ts:29:1 › shows API failure and recovers on retry (434ms)
+  ✓  3 tests/dashboard.spec.ts:39:1 › failed reset retains displayed scenario and retry succeeds (538ms)
+  ✓  4 tests/dashboard.spec.ts:52:1 › mobile dashboard fits viewport (507ms)
+
+  4 passed (4.4s)
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+[2m[WebServer] [22m(node:35) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22mnpm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+[2m[WebServer] [22m(node:48) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+(node:67) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:67) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
