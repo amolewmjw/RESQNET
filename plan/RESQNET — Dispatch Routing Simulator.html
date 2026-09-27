@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RESQNET — Dispatch Routing Simulator</title>
+<style>
+:root{
+  --bg:#0c1210; --panel:#121a17; --line:#24332d; --text:#dfe8e2; --dim:#7f9188;
+  --clear:#2f8f5b; --partial:#c98a2c; --blocked:#b23a3a; --amb:#2f9bd6; --hosp:#c9578a; --inc:#e2b33c; --path1:#2f9bd6; --path2:#c9578a;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Courier New',ui-monospace,monospace;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+h1{font-size:1.05rem;letter-spacing:.02em;margin:0;font-weight:700}
+.sub{color:var(--dim);font-size:.75rem;margin-top:2px}
+header{padding:14px 18px;border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5}
+.wrap{display:flex;flex-wrap:wrap;gap:14px;padding:14px 18px}
+.map-col{flex:1 1 560px;min-width:300px}
+.ctrl-col{flex:0 0 320px;min-width:280px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:12px;margin-bottom:12px}
+.panel h2{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin:0 0 10px}
+label{display:block;font-size:.75rem;color:var(--dim);margin-bottom:3px}
+input[type=number],select{width:100%;background:#0a0f0d;border:1px solid var(--line);color:var(--text);
+  padding:6px 8px;border-radius:3px;font-family:inherit;font-size:.85rem;margin-bottom:10px}
+input[type=range]{width:100%;margin-bottom:10px;accent-color:var(--amb)}
+.row{display:flex;gap:8px}
+.row>div{flex:1}
+svg{width:100%;height:auto;display:block;background:#0a0f0d;border:1px solid var(--line);border-radius:4px}
+.edge{cursor:pointer;transition:stroke .15s}
+.node-label{font-size:10px;fill:var(--dim);font-family:inherit}
+.readout{font-size:.8rem;line-height:1.55}
+.readout b{color:#fff}
+.tag{display:inline-block;padding:1px 6px;border-radius:2px;font-size:.68rem;margin-left:4px}
+.tag.ok{background:#173124;color:var(--clear)}
+.tag.warn{background:#2e2210;color:var(--partial)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.7rem;color:var(--dim);margin-top:8px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.hint{font-size:.68rem;color:var(--dim);margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+  <h1>RESQNET — DISPATCH ROUTING SIMULATOR</h1>
+  <div class="sub">A* pathfinding: nearest low-blockage ambulance → incident → nearest hospital with required capacity</div>
+</header>
+
+<div class="wrap">
+  <div class="map-col">
+    <svg id="map" viewBox="0 0 800 500"></svg>
+    <div class="legend" id="legend"></div>
+    <div class="hint">Click a road segment to cycle it: clear → partial blockage → fully blocked.</div>
+  </div>
+
+  <div class="ctrl-col">
+    <div class="panel">
+      <h2>Situation Input</h2>
+      <label>Patients at incident</label>
+      <input type="number" id="patients" min="1" max="50" value="6">
+      <label>Severity (1 low – 5 critical)</label>
+      <input type="range" id="severity" min="1" max="5" value="4">
+      <div class="row">
+        <div>
+          <label>Asset needed</label>
+          <select id="asset">
+            <option value="icu">ICU beds</option>
+            <option value="blood">Blood units</option>
+            <option value="vent">Ventilators</option>
+          </select>
+        </div>
+        <div>
+          <label>Qty required</label>
+          <input type="number" id="qty" min="1" max="20" value="2">
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Dispatch Result</h2>
+      <div class="readout" id="readout">—</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const NS="http://www.w3.org/2000/svg";
+const svg=document.getElementById('map');
+
+// ---- Graph definition ----
+const nodes = {
+  A1:{x:50,y:100,type:'amb'}, A2:{x:60,y:410,type:'amb'}, A3:{x:750,y:80,type:'amb'},
+  H1:{x:700,y:450,type:'hosp',stock:{icu:2,blood:5,vent:1}},
+  H2:{x:400,y:40,type:'hosp',stock:{icu:0,blood:10,vent:3}},
+  H3:{x:100,y:450,type:'hosp',stock:{icu:4,blood:2,vent:0}},
+  INC:{x:400,y:250,type:'inc'},
+  J1:{x:200,y:150,type:'j'}, J2:{x:300,y:200,type:'j'}, J3:{x:500,y:200,type:'j'}, J4:{x:600,y:150,type:'j'},
+  J5:{x:250,y:350,type:'j'}, J6:{x:450,y:350,type:'j'}, J7:{x:550,y:350,type:'j'}, J8:{x:150,y:300,type:'j'}, J9:{x:650,y:300,type:'j'}
+};
+const edgeDefs = [
+  ['A1','J1'],['J1','J2'],['J2','INC'],['J1','J8'],['J8','J5'],['J5','INC'],['J5','H3'],
+  ['A2','J8'],['J2','J3'],['J3','INC'],['J3','J4'],['J4','A3'],['J3','J9'],['J9','H1'],
+  ['J9','J7'],['J7','INC'],['J7','H1'],['J4','H2'],['J2','H2'],['J6','INC'],['J6','J7'],
+  ['J6','H3'],['J5','J6']
+];
+let blockage = {}; // key "A-B" -> 0,1,2  (clear, partial, full)
+edgeDefs.forEach(([a,b])=>blockage[a+'|'+b]=0);
+
+function dist(a,b){const dx=nodes[a].x-nodes[b].x,dy=nodes[a].y-nodes[b].y;return Math.hypot(dx,dy);}
+function adj(n){
+  const out=[];
+  edgeDefs.forEach(([a,b])=>{
+    if(a===n)out.push(b); if(b===n)out.push(a);
+  });
+  return out;
+}
+function edgeKey(a,b){return (blockage[a+'|'+b]!==undefined)?a+'|'+b:b+'|'+a;}
+function blockLevel(a,b){return blockage[edgeKey(a,b)];}
+function edgeCost(a,b,severity){
+  const base=dist(a,b);
+  const lvl=blockLevel(a,b); // 0,1,2
+  if(lvl===2) return Infinity;
+  const penalty = lvl===1 ? (1 + severity*0.35) : 0;
+  return base*(1+penalty);
+}
+
+// ---- A* ----
+function astar(start,goal,severity){
+  const open=new Set([start]);
+  const cameFrom={};
+  const g={[start]:0};
+  const f={[start]:dist(start,goal)};
+  while(open.size){
+    let current=null,best=Infinity;
+    for(const n of open){ if(f[n]<best){best=f[n];current=n;} }
+    if(current===goal){
+      const path=[current]; let c=current;
+      while(cameFrom[c]){c=cameFrom[c];path.unshift(c);}
+      return {path,cost:g[goal]};
+    }
+    open.delete(current);
+    for(const nb of adj(current)){
+      const c=edgeCost(current,nb,severity);
+      if(c===Infinity)continue;
+      const tentative=g[current]+c;
+      if(tentative < (g[nb]!==undefined?g[nb]:Infinity)){
+        cameFrom[nb]=current;
+        g[nb]=tentative;
+        f[nb]=tentative+dist(nb,goal);
+        open.add(nb);
+      }
+    }
+  }
+  return {path:null,cost:Infinity};
+}
+
+// ---- Drawing ----
+function el(tag,attrs){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);return e;}
+
+function edgeColor(lvl,highlight){
+  if(highlight)return highlight;
+  return lvl===0?'#2c3d36':lvl===1?'var(--partial)':'var(--blocked)';
+}
+
+let pathEdgesA=new Set(), pathEdgesB=new Set();
+function pathToEdgeSet(path){
+  const s=new Set();
+  if(!path)return s;
+  for(let i=0;i<path.length-1;i++)s.add(edgeKey(path[i],path[i+1]));
+  return s;
+}
+
+function render(){
+  svg.innerHTML='';
+  // edges
+  edgeDefs.forEach(([a,b])=>{
+    const key=edgeKey(a,b);
+    const lvl=blockage[key];
+    let hl=null;
+    if(pathEdgesA.has(key))hl='var(--path1)';
+    else if(pathEdgesB.has(key))hl='var(--path2)';
+    const line=el('line',{x1:nodes[a].x,y1:nodes[a].y,x2:nodes[b].x,y2:nodes[b].y,
+      stroke:edgeColor(lvl,hl),'stroke-width':hl?5:(lvl===2?3:2.5),class:'edge'});
+    line.addEventListener('click',()=>{blockage[key]=(blockage[key]+1)%3;compute();});
+    svg.appendChild(line);
+  });
+  // nodes
+  for(const id in nodes){
+    const n=nodes[id];
+    const color=n.type==='amb'?'var(--amb)':n.type==='hosp'?'var(--hosp)':n.type==='inc'?'var(--inc)':'#3d4d46';
+    const r=n.type==='j'?4:9;
+    svg.appendChild(el('circle',{cx:n.x,cy:n.y,r,fill:color,stroke:'#000','stroke-width':n.type==='j'?0:1}));
+    if(n.type!=='j'){
+      const t=el('text',{x:n.x,y:n.y-14,'text-anchor':'middle',class:'node-label',fill:color});
+      t.textContent=id;
+      svg.appendChild(t);
+    }
+  }
+}
+
+function legend(){
+  document.getElementById('legend').innerHTML = `
+    <span><span class="dot" style="background:var(--amb)"></span>Ambulance</span>
+    <span><span class="dot" style="background:var(--hosp)"></span>Hospital</span>
+    <span><span class="dot" style="background:var(--inc)"></span>Incident</span>
+    <span><span class="dot" style="background:var(--clear)"></span>Clear road</span>
+    <span><span class="dot" style="background:var(--partial)"></span>Partial blockage</span>
+    <span><span class="dot" style="background:var(--blocked)"></span>Blocked</span>`;
+}
+
+function compute(){
+  const severity = +document.getElementById('severity').value;
+  const patients = +document.getElementById('patients').value;
+  const asset = document.getElementById('asset').value;
+  const qty = +document.getElementById('qty').value;
+
+  // Nearest low-blockage ambulance -> incident
+  const ambulances = Object.keys(nodes).filter(id=>nodes[id].type==='amb');
+  let bestAmb=null, bestAmbResult={cost:Infinity};
+  ambulances.forEach(id=>{
+    const r=astar(id,'INC',severity);
+    if(r.cost<bestAmbResult.cost){bestAmbResult=r;bestAmb=id;}
+  });
+
+  // Hospitals filtered by available capacity for requested asset
+  const hospitals = Object.keys(nodes).filter(id=>nodes[id].type==='hosp');
+  let candidates = hospitals.filter(id=>nodes[id].stock[asset]>=qty);
+  let fallback=false;
+  if(candidates.length===0){candidates=hospitals;fallback=true;}
+  let bestHosp=null, bestHospResult={cost:Infinity};
+  candidates.forEach(id=>{
+    const r=astar('INC',id,severity);
+    if(r.cost<bestHospResult.cost){bestHospResult=r;bestHosp=id;}
+  });
+
+  pathEdgesA = pathToEdgeSet(bestAmbResult.path);
+  pathEdgesB = pathToEdgeSet(bestHospResult.path);
+  render();
+
+  const km = v => v===Infinity? '—' : (v/40).toFixed(1);
+  const eta = v => v===Infinity? '—' : Math.ceil(v/8)+' min';
+
+  let html = '';
+  html += `<b>Priority:</b> ${severity>=4?'CRITICAL':severity===3?'urgent':'stable'} <span class="tag ${severity>=4?'warn':'ok'}">${patients} patient(s)</span><br>`;
+  if(bestAmb){
+    html += `<b>Ambulance dispatched:</b> ${bestAmb} → INC<br>`;
+    html += `Route: ${bestAmbResult.path.join(' → ')}<br>`;
+    html += `Distance ≈ ${km(bestAmbResult.cost)} km · ETA ≈ ${eta(bestAmbResult.cost)}<br><br>`;
+  } else {
+    html += `<b>No reachable ambulance</b> — all routes blocked.<br><br>`;
+  }
+  if(bestHosp){
+    html += `<b>Hospital assigned:</b> INC → ${bestHosp} ${fallback?'<span class="tag warn">no hospital had full stock — nearest sent anyway</span>':'<span class="tag ok">capacity confirmed</span>'}<br>`;
+    html += `Route: ${bestHospResult.path.join(' → ')}<br>`;
+    html += `Distance ≈ ${km(bestHospResult.cost)} km · ETA ≈ ${eta(bestHospResult.cost)}<br>`;
+    html += `${bestHosp} stock — ICU:${nodes[bestHosp].stock.icu} Blood:${nodes[bestHosp].stock.blood} Vent:${nodes[bestHosp].stock.vent}`;
+  } else {
+    html += `<b>No reachable hospital</b> — all routes blocked.`;
+  }
+  document.getElementById('readout').innerHTML = html;
+}
+
+['patients','severity','asset','qty'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',compute);
+});
+
+legend();
+compute();
+</script>
+</body>
+</html>

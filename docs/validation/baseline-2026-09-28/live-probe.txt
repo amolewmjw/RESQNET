@@ -1,0 +1,9 @@
+Live HTTP: health, scenario catalogue, flood snapshot passed; OpenAPI export matches runtime.
+Tracked demo SQLite: read-only integrity and foreign-key checks passed; flood with 6 patients.
+building_collapse {'nodes': 9, 'roads': 12, 'ambulances': 4, 'hospitals': 3, 'patients': 5}
+  Active hazard contains nodes: ['N5'] ; incident roads without hazard reference: ['R04', 'R10']
+flood {'nodes': 9, 'roads': 12, 'ambulances': 4, 'hospitals': 3, 'patients': 6}
+  Active hazard contains nodes: ['N5'] ; incident roads without hazard reference: ['R04', 'R10']
+industrial_gas_leak {'nodes': 9, 'roads': 12, 'ambulances': 4, 'hospitals': 3, 'patients': 4}
+  Active hazard contains nodes: ['N5'] ; incident roads without hazard reference: ['R04', 'R10']
+Probe completed. Hazard-reference mismatch is an observed data gap, not a routing test.

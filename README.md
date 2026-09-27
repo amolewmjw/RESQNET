@@ -4,6 +4,10 @@ DJSCE ELEVATE 1.0 · EL-02: Intelligent & Transparent Disaster Relief Resource A
 
 A working local simulation foundation: FastAPI + SQLAlchemy/SQLite + NetworkX, and React + TypeScript + Vite + Tailwind + React Leaflet. **Sprint 1 only.** No allocation, grouping, route planning/movement, repositioning, audit ledger, WebSockets, paid API, real map service, or real patient data is implemented.
 
+Sprint 1 is merged into `main`. Start future work with [project context](docs/PROJECT_CONTEXT.md), the [September 28 baseline assessment](docs/BASELINE_ASSESSMENT.md), and the [proposed Sprint 2–5 plan](docs/SPRINT_PLAN.md). Sprint 2 is awaiting explicit approval.
+
+The roadmap is now [realigned with the teammate's simulation narrative](docs/PLAN_ALIGNMENT.md) and the [repository planning references](plan/README.md): Start-gated A* routing, mixed patient requirements, compatible multi-trip transport, live inventories, road interventions and measured allocation comparisons. These are planned behaviors; the running application remains Sprint 1.
+
 ## Start here on Windows
 
 Install **Python 3.12 (64-bit)** and **Node.js 22.12 or newer LTS**. Install Git only if you want to push the project. Initial dependency downloads need internet; running the installed demo needs no external service or API key.
@@ -73,7 +77,7 @@ npm.cmd run test:e2e
 
 To inspect the built frontend, run `npm.cmd run preview` and visit `http://127.0.0.1:4173`; keep the backend running. This preview server also proxies `/api`.
 
-The included CI workflow checks backend tests and frontend builds on Ubuntu and Windows; browser integration runs on Ubuntu. **The workflow has not been run on GitHub here.** See `docs/SPRINT1_REPORT.md` for results actually obtained in this environment.
+The included CI workflow checks backend tests and frontend builds on Ubuntu and Windows; browser integration runs on Ubuntu. The [main-branch run](https://github.com/amolewmjw/RESQNET/actions/runs/36268287267) passed all three jobs for commit `8338ea5`. See `docs/BASELINE_ASSESSMENT.md` for fresh local results; `docs/SPRINT1_REPORT.md` retains the original historical evidence.
 
 ## Configuration
 
@@ -155,6 +159,6 @@ Each successful reset increments `revision`. Resource values return to the fixtu
 
 ## GitHub collaboration
 
-This source is maintained at `https://github.com/amolewmjw/RESQNET`. The Sprint 1 implementation is proposed on the `sprint-1-foundation` branch for review before merging to `main`. GitHub Actions check results are separate from the local test evidence in `docs/SPRINT1_REPORT.md`.
+This source is maintained at `https://github.com/amolewmjw/RESQNET`. Sprint 1 was merged into `main` through PR #1. The September 28 baseline assessment and proposed roadmap are on local branch `assessment/sprint1-baseline-plan`. GitHub Actions results and fresh local results are recorded separately in `docs/BASELINE_ASSESSMENT.md`.
 
 The `.gitignore` excludes local virtual environments, generated app databases, dependency directories and build output. Never commit real patient data. Sprint 2 requires separate user approval.

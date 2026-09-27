@@ -1,5 +1,9 @@
 # Architecture and scope
 
+Current handoff (September 28, 2026): Sprint 1 is merged and re-assessed in [BASELINE_ASSESSMENT.md](BASELINE_ASSESSMENT.md). [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) records the current user requirements and approval boundaries; [SPRINT_PLAN.md](SPRINT_PLAN.md) proposes the remaining work. The implementation below remains Sprint 1 only.
+
+The follow-up [PLAN_ALIGNMENT.md](PLAN_ALIGNMENT.md) reconciles the new `plan/` references with the mandatory constraints. Planned architecture adds server-authoritative Start gating, separate A* routing and constrained batch allocation, reservation/consumption accounting, grouped multi-trip lifecycle and WebSocket updates, followed by dynamic events/benchmarks and SHA-256 verification. The standalone HTML in `plan/` is a reference, not a service wired into this app. No described future module is implemented by this documentation update.
+
 ## Basis for implementation
 
 The user requested Sprint 1 only and directed retrieval of the latest **Share Link Access** conversation. Personal-context retrieval recovered the approved v1.3 decisions (September 26, 2026): RESQNET identity; Python/FastAPI, SQLite/SQLAlchemy, React/TypeScript/Leaflet, NetworkX; explicit crew/equipment/dimensions/approved patient positions; hospital authorization; and future multi-patient transport, road access, repositioning, disaster profiles and utilization metrics. The retrieval supplied decision summaries rather than the complete verbatim transcript. Earlier project handoff text was also read. The present user's ten Sprint 1 requirements control this implementation.
