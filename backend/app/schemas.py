@@ -105,6 +105,7 @@ class PatientData(Record):
     required_facilities: list[str]
     clinical_compatibility_group: str
     status: Literal["waiting"]
+    required_hospital_place: Literal["general", "icu"] = "general"
 
 class Scenario(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -163,10 +164,43 @@ class Scenario(BaseModel):
 class SimulationState(Scenario):
     revision: int
     synthetic: Literal[True] = True
+    run_status: Literal["idle", "allocated"] = "idle"
+    clock_status: Literal["idle", "running", "paused", "complete"] = "idle"
+    run_id: str = "run-1"
+    sim_time: float = 0
+    allocations: list[dict] = Field(default_factory=list)
+    reservations: list[dict] = Field(default_factory=list)
+    trips: list[dict] = Field(default_factory=list)
+    ledger: list[dict] = Field(default_factory=list)
+    metrics: dict = Field(default_factory=dict)
 
 class ResetRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     scenario_id: ScenarioId
+
+class AllocationRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    expected_revision: int | None = Field(default=None, ge=1)
+
+class StepRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    expected_revision: int | None = Field(default=None, ge=1)
+    minutes: Positive = Field(default=1, le=60)
+
+class InterventionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    expected_revision: int | None = Field(default=None, ge=1)
+    road_id: str | None = None
+    blocked: bool | None = None
+    hospital_id: str | None = None
+    beds_available: Count | None = None
+    icu_available: Count | None = None
+    note: str = Field(default="Manual synthetic intervention", max_length=200)
+
+class ClockRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    expected_revision: int | None = Field(default=None, ge=1)
+    action: Literal["pause", "resume"]
 
 class ScenarioSummary(BaseModel):
     id: ScenarioId

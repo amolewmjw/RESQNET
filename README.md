@@ -2,9 +2,9 @@
 
 DJSCE ELEVATE 1.0 · EL-02: Intelligent & Transparent Disaster Relief Resource Allocation.
 
-A working local simulation foundation: FastAPI + SQLAlchemy/SQLite + NetworkX, and React + TypeScript + Vite + Tailwind + React Leaflet. **Sprint 1 only.** No allocation, grouping, route planning/movement, repositioning, audit ledger, WebSockets, paid API, real map service, or real patient data is implemented.
+A working local MVP for synthetic disaster-relief allocation: FastAPI + SQLAlchemy/SQLite + NetworkX, and React + TypeScript + Vite + Tailwind + React Leaflet. It provides explicit Start-gated allocation, accessible routes, atomic reservations, a deterministic trip clock, live WebSocket snapshots, intervention/rerouting, metrics and a SHA-256 verification endpoint. See [MVP status](docs/MVP_STATUS.md) for the implemented boundary.
 
-Sprint 1 is merged into `main`. Start future work with [project context](docs/PROJECT_CONTEXT.md), the [September 28 baseline assessment](docs/BASELINE_ASSESSMENT.md), and the [proposed Sprint 2–5 plan](docs/SPRINT_PLAN.md). Sprint 2 is awaiting explicit approval.
+Sprint 1 is merged into `main`. The current branch preserves that work and layers the MVP runtime on top. Use [project context](docs/PROJECT_CONTEXT.md), [MVP status](docs/MVP_STATUS.md), and the [realigned Sprint 2–5 plan](docs/SPRINT_PLAN.md) when continuing development.
 
 The roadmap is now [realigned with the teammate's simulation narrative](docs/PLAN_ALIGNMENT.md) and the [repository planning references](plan/README.md): Start-gated A* routing, mixed patient requirements, compatible multi-trip transport, live inventories, road interventions and measured allocation comparisons. These are planned behaviors; the running application remains Sprint 1.
 
@@ -91,7 +91,7 @@ Edit the appropriate `backend/data/scenarios/*.json`, then reset that scenario t
 - `roads`: distance in km, travel time in minutes, width/height limits in metres, explicit allowed vehicle classes, blocked flag and optional hazard-zone reference.
 - `hazard_zones`: polygon in schematic coordinates, kind, active flag and note.
 
-All inventories, approval labels, capacities, clinical labels and measurements are **fictional demonstration fixtures**, not certified ambulance specifications or medical advice. The ambulance type never supplies missing values. Position counts cannot be negative or overoccupied. A seated position cannot substitute for a stretcher position. No grouping decision is made in Sprint 1. Crew availability and capability labels are stored separately; future allocation must check both. A hospital category does not automatically authorize reimbursement or declare the facility clinically suitable.
+All inventories, approval labels, capacities, clinical labels and measurements are **fictional demonstration fixtures**, not certified ambulance specifications or medical advice. The ambulance type never supplies missing values. Position counts cannot be negative or overoccupied. A seated position cannot substitute for a stretcher position. Crew availability, capability labels and hospital facilities are checked independently. A hospital category does not automatically authorize reimbursement or declare the facility clinically suitable.
 
 Scenario validation rejects duplicate IDs, missing nodes/equipment/types, invalid counts, overcapacity, shared crew members, parallel road links, and missing private authorization references. Invalid data cannot partially erase the running simulation.
 
@@ -111,8 +111,11 @@ Remove the override with `Remove-Item Env:RESQNET_DATABASE_URL`. Use one backend
 | GET | `/api/scenarios` | Three available scenario summaries |
 | GET | `/api/simulation` | Complete validated persisted snapshot |
 | POST | `/api/simulation/reset` | Atomically restore selected scenario |
+| POST | `/api/simulation/start` | Start deterministic static allocation for the current revision |
 
 Reset body: `{"scenario_id":"building_collapse"}`. Valid IDs: `flood`, `building_collapse`, `industrial_gas_leak`.
+
+Start body: `{"expected_revision":1}`. Start is explicit and idempotent for a revision. It reserves feasible ambulance and hospital resources, returns route/factor records, and leaves infeasible patients waiting with a reason. It does not animate vehicles, group patients, or deliver resources; those are later sprints.
 
 ```powershell
 Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/api/simulation/reset -ContentType "application/json" -Body '{"scenario_id":"flood"}'
@@ -154,11 +157,11 @@ Each successful reset increments `revision`. Resource values return to the fixtu
 - `ModuleNotFoundError`: run installation with `.\.venv\Scripts\python.exe`, then use that same interpreter for Uvicorn and pytest.
 - Dashboard API error: check backend health, keep port 8000 unchanged, and inspect the backend terminal.
 - Port already used: stop the earlier server with `Ctrl+C`. Ports are deliberately fixed for the Vite proxy and tests.
-- Database error after future model changes: do not assume `create_all()` migrates an existing schema. Introduce a migration in a future sprint, or back up and remove only a disposable synthetic DB before recreating it.
+- Database error after model changes: do not assume `create_all()` migrates an existing schema. The startup migration is additive; preserve a copy of any synthetic database before changing it.
 - Browser download failure: the dashboard and production build do not require Playwright. Retry the browser installation on a network that permits its download, or install the project's matching browser bundle.
 
 ## GitHub collaboration
 
 This source is maintained at `https://github.com/amolewmjw/RESQNET`. Sprint 1 was merged into `main` through PR #1. The September 28 baseline assessment and proposed roadmap are on local branch `assessment/sprint1-baseline-plan`. GitHub Actions results and fresh local results are recorded separately in `docs/BASELINE_ASSESSMENT.md`.
 
-The `.gitignore` excludes local virtual environments, generated app databases, dependency directories and build output. Never commit real patient data. Sprint 2 requires separate user approval.
+The `.gitignore` excludes local virtual environments, generated app databases, dependency directories and build output. Never commit real patient data. Do not merge or deploy this branch without review.

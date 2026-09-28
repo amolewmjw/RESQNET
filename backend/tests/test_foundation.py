@@ -12,6 +12,7 @@ from app.main import create_app
 from app import models as m
 from app.schemas import AmbulanceData, Scenario
 from app.simulation import SCENARIO_IDS, DATA_DIR
+from app.graph import accessible_graph, shortest_route
 
 
 def resource_payload(state):
@@ -19,13 +20,13 @@ def resource_payload(state):
 
 
 def test_initialization_and_schema(client, app):
-    assert client.get('/api/health').json()['status'] == 'ok'
+    assert client.get('/api/health').json() == {'status': 'ok', 'scope': 'sprint-2'}
     state = client.get('/api/simulation').json()
     assert state['scenario_id'] == 'flood' and state['revision'] == 1
     assert state['synthetic'] is True
     assert set(inspect(app.state.engine).get_table_names()) == {
         'simulation_meta', 'patients', 'ambulances', 'hospitals', 'roads', 'road_nodes',
-        'hazard_zones', 'ambulance_types', 'equipment_types'}
+        'hazard_zones', 'ambulance_types', 'equipment_types', 'allocations', 'reservations'}
     assert {h['category'] for h in state['hospitals']} == {
         'government', 'authorized_private', 'non_authorized_private'}
     assert len(client.get('/api/scenarios').json()) == 3
@@ -163,4 +164,55 @@ def test_concurrent_resets_are_complete(client, app):
 
 def test_future_services_not_exposed(client):
     paths = client.get('/openapi.json').json()['paths']
-    assert set(paths) == {'/api/health','/api/scenarios','/api/simulation','/api/simulation/reset'}
+    assert {'/api/health','/api/scenarios','/api/simulation','/api/simulation/reset','/api/simulation/start'} <= set(paths)
+
+def test_step_ledger_and_verification(client):
+    before = client.post('/api/simulation/start', json={'expected_revision': 1}).json()
+    assert before['trips']
+    stepped = client.post('/api/simulation/step', json={'expected_revision': before['revision'], 'minutes': 1})
+    assert stepped.status_code == 200
+    assert stepped.json()['sim_time'] == 1
+    verification = client.get('/api/ledger/verify')
+    assert verification.status_code == 200 and verification.json()['valid'] is True
+
+def test_pause_freezes_clock_and_intervention_is_recorded(client):
+    started = client.post('/api/simulation/start', json={'expected_revision': 1}).json()
+    paused = client.post('/api/simulation/clock', json={'expected_revision': 1, 'action': 'pause'}).json()
+    frozen = client.post('/api/simulation/step', json={'expected_revision': 1, 'minutes': 5}).json()
+    assert paused['clock_status'] == 'paused' and frozen['sim_time'] == paused['sim_time']
+    changed = client.post('/api/simulation/intervene', json={'expected_revision': 1, 'road_id': 'R1', 'blocked': True}).json()
+    assert changed['roads'][0]['blocked'] is True
+
+def test_start_allocates_atomically_with_factors_and_is_idempotent(client, app):
+    before = client.get('/api/simulation').json()
+    assert before['run_status'] == 'idle' and before['allocations'] == []
+    started = client.post('/api/simulation/start', json={'expected_revision': before['revision']})
+    assert started.status_code == 200
+    state = started.json()
+    assert state['run_status'] == 'allocated'
+    assert state['allocations']
+    assigned = [a for a in state['allocations'] if a['status'] == 'assigned']
+    waiting = [a for a in state['allocations'] if a['status'] == 'waiting']
+    assert all(a['factors']['pickup_route'] and a['factors']['delivery_route'] for a in assigned)
+    assert all(a['waiting_reason'] for a in waiting)
+    assert len(state['reservations']) == len(assigned) * 2
+    repeat = client.post('/api/simulation/start', json={'expected_revision': state['revision']}).json()
+    assert repeat['allocations'] == state['allocations']
+
+def test_start_rejects_stale_revision_without_mutation(client):
+    before = client.get('/api/simulation').json()
+    response = client.post('/api/simulation/start', json={'expected_revision': 999})
+    assert response.status_code == 409
+    assert client.get('/api/simulation').json() == before
+
+def test_accessible_route_filters_vehicle_dimensions_closures_and_hazards(client, app):
+    definition = app.state.simulation.load_definition('flood')
+    compact = definition.ambulances[0].model_dump()
+    route = shortest_route(definition, compact, 'N1', 'N4')
+    assert route and route['path'] == ['N1', 'N4']
+    large = definition.ambulances[1].model_dump()
+    assert not accessible_graph(definition, large).has_edge('N1', 'N4')
+    roads = [r.model_copy() for r in definition.roads]
+    roads[6].blocked = True
+    altered = definition.model_copy(update={'roads': roads})
+    assert shortest_route(altered, compact, 'N1', 'N4') is not None

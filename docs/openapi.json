@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "RESQNET",
-    "description": "Sprint 1: synthetic simulation foundation only",
-    "version": "0.1.0"
+    "description": "Sprint 2: start-gated accessible allocation foundation",
+    "version": "0.2.0"
   },
   "paths": {
     "/api/health": {
@@ -105,10 +105,67 @@
           }
         }
       }
+    },
+    "/api/simulation/start": {
+      "post": {
+        "summary": "Start",
+        "operationId": "start_api_simulation_start_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AllocationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulationState"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AllocationRequest": {
+        "properties": {
+          "expected_revision": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AllocationRequest"
+      },
       "AmbulanceData": {
         "properties": {
           "id": {
@@ -526,6 +583,15 @@
             "type": "string",
             "const": "waiting",
             "title": "Status"
+          },
+          "required_hospital_place": {
+            "type": "string",
+            "enum": [
+              "general",
+              "icu"
+            ],
+            "title": "Required Hospital Place",
+            "default": "general"
           }
         },
         "additionalProperties": false,
@@ -767,6 +833,31 @@
             "const": true,
             "title": "Synthetic",
             "default": true
+          },
+          "run_status": {
+            "type": "string",
+            "enum": [
+              "idle",
+              "allocated"
+            ],
+            "title": "Run Status",
+            "default": "idle"
+          },
+          "allocations": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Allocations"
+          },
+          "reservations": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Reservations"
           }
         },
         "additionalProperties": false,

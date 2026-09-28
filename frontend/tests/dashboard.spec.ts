@@ -56,3 +56,11 @@ test('mobile dashboard fits viewport', async ({ page }) => {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
   await page.screenshot({ path: '../docs/dashboard-mobile.png', fullPage: true });
 });
+
+test('starts allocation and shows assignments with waiting reasons', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Patients 6', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Start allocation' }).click();
+  await expect(page.getByRole('status')).toContainText('Allocation started');
+  await expect(page.getByRole('button', { name: 'Start allocation' })).toBeDisabled();
+});

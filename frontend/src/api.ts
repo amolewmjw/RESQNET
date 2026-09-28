@@ -20,4 +20,9 @@ export const api = {
   state: () => request<SimulationState>('simulation'),
   scenarios: () => request<ScenarioSummary[]>('scenarios'),
   reset: (scenario_id: ScenarioId) => request<SimulationState>('simulation/reset', { scenario_id }),
+  start: (expected_revision: number) => request<SimulationState>('simulation/start', { expected_revision }),
+  step: (expected_revision: number, minutes = 1) => request<SimulationState>('simulation/step', { expected_revision, minutes }),
+  clock: (expected_revision: number, action: 'pause' | 'resume') => request<SimulationState>('simulation/clock', { expected_revision, action }),
+  intervene: (body: Record<string, unknown>) => request<SimulationState>('simulation/intervene', body),
+  verifyLedger: () => request<Record<string, unknown>>('ledger/verify'),
 };

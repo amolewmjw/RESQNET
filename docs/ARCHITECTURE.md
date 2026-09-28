@@ -1,8 +1,8 @@
 # Architecture and scope
 
-Current handoff (September 28, 2026): Sprint 1 is merged and re-assessed in [BASELINE_ASSESSMENT.md](BASELINE_ASSESSMENT.md). [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) records the current user requirements and approval boundaries; [SPRINT_PLAN.md](SPRINT_PLAN.md) proposes the remaining work. The implementation below remains Sprint 1 only.
+Current handoff (September 28, 2026): Sprint 1 is merged and re-assessed in [BASELINE_ASSESSMENT.md](BASELINE_ASSESSMENT.md). [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) records the current user requirements and approval boundaries; [SPRINT_PLAN.md](SPRINT_PLAN.md) records the realigned roadmap. The implementation below describes the local MVP.
 
-The follow-up [PLAN_ALIGNMENT.md](PLAN_ALIGNMENT.md) reconciles the new `plan/` references with the mandatory constraints. Planned architecture adds server-authoritative Start gating, separate A* routing and constrained batch allocation, reservation/consumption accounting, grouped multi-trip lifecycle and WebSocket updates, followed by dynamic events/benchmarks and SHA-256 verification. The standalone HTML in `plan/` is a reference, not a service wired into this app. No described future module is implemented by this documentation update.
+The follow-up [PLAN_ALIGNMENT.md](PLAN_ALIGNMENT.md) reconciles the new `plan/` references with the mandatory constraints. The MVP adds server-authoritative Start gating, separate A* route filtering, allocation/reservation records, a deterministic trip lifecycle, WebSocket snapshots, synthetic interventions, metrics and SHA-256 verification; see [MVP_STATUS.md](MVP_STATUS.md). The standalone HTML in `plan/` is a reference, not a service wired into this app.
 
 ## Basis for implementation
 
@@ -23,7 +23,7 @@ The process lock also serializes snapshot reads with resets, preventing partiall
 
 ## Database design
 
-Nine tables: `simulation_meta`, `road_nodes`, `hazard_zones`, `roads`, `ambulance_types`, `equipment_types`, `ambulances`, `hospitals`, `patients`.
+The core schema now includes `simulation_meta`, `road_nodes`, `hazard_zones`, `roads`, `ambulance_types`, `equipment_types`, `ambulances`, `hospitals`, `patients`, `allocations`, `reservations`, `trips` and `ledger_events`.
 
 - Every patient, ambulance and hospital refers to a road node. Each ambulance also stores its home node for later repositioning.
 - Road endpoints and optional hazard zone are foreign keys. This sprint supports one undirected road per node pair.
@@ -32,9 +32,9 @@ Nine tables: `simulation_meta`, `road_nodes`, `hazard_zones`, `roads`, `ambulanc
 - SQL constraints independently enforce principal numeric bounds, patient position/severity, status and hospital category/authorization.
 - General beds and ICU places are separate capacity pools and are never summed as interchangeable places.
 - Patient records deliberately have no real names, ages, contact data, diagnoses or addresses. Severity and transport requirements are predeclared synthetic labels, not computed triage.
-- The metadata revision identifies the snapshot version and increments on reset. It is not an audit ledger.
+- The metadata revision identifies the snapshot version and increments on reset. Ledger events are retained separately and hash-linked across runs.
 
-`docs/schema.sql` is generated from the same SQLAlchemy metadata used at runtime. `docs/openapi.json` is generated from the actual app. SQLAlchemy `create_all()` is only an initial schema bootstrap; schema migrations are a future development task.
+`docs/schema.sql` is generated from the same SQLAlchemy metadata used at runtime. `docs/openapi.json` is generated from the actual app. SQLAlchemy `create_all()` bootstraps new databases; the startup migration adds the MVP columns to existing synthetic databases.
 
 ## Synthetic network and scenarios
 
@@ -44,13 +44,13 @@ Graph edges retain distance, time, width/height limits, allowed classes, blocked
 
 Gas-leak pickup locations represent patients already staged outside the simulated exclusion polygon. No rescue-entry clearance, respiratory protective equipment capability, flood wading capability or toxicology rule is inferred.
 
-## Future extension points — unimplemented
+## Deliberate boundaries
 
-`interfaces.py` defines typed Protocols for routing, allocation, grouping, movement and audit. It does not instantiate these services, register endpoints for them, or return placeholder successful results.
+`interfaces.py` retains typed Protocols for future full-scale routing, allocation, grouping, movement and audit services. The implemented local MVP uses the concrete services in `simulation.py` and does not pretend to be a production dispatch system.
 
-Future work must enforce the approved rules: per-vehicle equipment/crew/capability checks; separate stretcher and seated positions; clinical grouping compatibility; same incident/pickup and one hospital initially; one hospital place per patient; individual assignment/delivery records; atomic reservations; and safe separate-transport/waiting fallback. No part of those decision algorithms runs in Sprint 1.
+The MVP enforces the approved rules: per-vehicle equipment/crew/capability checks; separate stretcher and seated positions; authorized hospital facilities; one hospital place per patient; individual allocation/trip records; atomic reservations; accessible routes; and safe waiting fallback. Explicitly compatible grouping and large-scale optimization remain future extensions.
 
-NumPy/pandas/SciPy, WebSockets, optimization, live movement, fleet metrics, repositioning and hashing remain future-sprint dependencies/features. They are not installed or claimed merely because they appear in the overall project stack. Native HTML controls suffice for this skeleton; no shadcn/Radix component is required yet.
+NumPy/pandas/SciPy, full-scale MILP/VRP, real hospital integrations, real basemaps, RL, smart contracts and production identity remain outside the local MVP. NetworkX, FastAPI WebSockets, deterministic trip stepping, metrics and hashlib SHA-256 are implemented with the agreed stack. Native HTML controls keep the demo accessible; no paid API is required.
 
 ## Useful official references
 
