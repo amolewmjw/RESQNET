@@ -1,0 +1,10 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),{createHash}=require('node:crypto');
+const root=path.resolve(__dirname,'..'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+assert(!/<script[^>]*>\s*[^<\s]/.test(html),'Unexpected inline script');
+const refs=[...html.matchAll(/<script[^>]* src="([^"]+)"/g)].map(m=>m[1]);
+assert.deepEqual(refs,['config','core','audit','playback','layout','app'].map(n=>'assets/js/'+n+'.js'));
+for(const src of [...refs,'assets/css/styles.css'])assert(fs.existsSync(path.join(root,src)),src);
+const reconstructed=require('./helpers/load-app.cjs')().replace('<link rel="stylesheet" href="assets/css/styles.css">',()=>'<style>'+fs.readFileSync(path.join(root,'assets/css/styles.css'),'utf8')+'</style>');
+assert.equal(createHash('sha256').update(reconstructed).digest('hex'),require('./baseline.json').sha256);
+console.log('PASS 6 external scripts and stylesheet resolve in original order');
+console.log('PASS reconstructed HTML, JavaScript and CSS byte-identical to approved Phase 6 baseline');

@@ -1,0 +1,13 @@
+{
+  "name": "resqnet",
+  "version": "1.0.0",
+  "private": true,
+  "description": "EL-02 disaster response simulation \u2014 No Free Lunch",
+  "scripts": {
+    "test": "node tests/run-tests.cjs",
+    "start": "node scripts/serve.cjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

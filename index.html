@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RESQNET — Building Collapse</title>
+<script src="assets/js/config.js"></script>
+<script id="resqnet-core" src="assets/js/core.js"></script>
+<script id="resqnet-audit" src="assets/js/audit.js"></script>
+<script id="resqnet-playback" src="assets/js/playback.js"></script>
+<script id="resqnet-layout" src="assets/js/layout.js"></script>
+<link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+<div class="shell">
+<header><div class="brand"><div class="logo" aria-hidden="true">✚</div><div><div class="wordmark">RESQNET</div><div class="eyebrow">Disaster response simulation</div></div></div><div class="state">Awaiting dispatch</div></header>
+<section class="intro" aria-label="Scenario overview"><div><h1 id="scenario"></h1><p id="scenario-help">Set road conditions, then start the response.</p></div><div id="summary" class="summary"></div></section>
+<div class="command-view"><main class="map-panel" aria-label="Response network">
+<div class="toolbar"><strong>Road conditions</strong><label>Playback <select id="playback-speed"><option value="demo">Demo — 0.1×</option><option value="normal" selected>Normal — 1×</option><option value="fast">Fast — 4×</option><option value="paused">Paused</option></select></label><div class="legend" aria-label="Road condition legend"><span><i class="sample"></i>Clear</span><span><i class="sample partial"></i>Partial</span><span><i class="sample blocked"></i>Blocked</span></div></div>
+<div class="map-scroll" tabindex="0" aria-label="Road map; scroll horizontally on small screens"><svg id="map" viewBox="0 0 1200 670" role="group" aria-label="Road network with hospitals, incident and parked ambulances"><title>Building collapse response network</title><desc>Activate a road with a click, Enter or Space to cycle clear, partial and blocked.</desc><rect width="1200" height="670" fill="#F3EFE5"/>
+<g fill="#E8E4D8" stroke="#DDD7C9" stroke-width="1" aria-hidden="true">
+<path d="M192 227 L284 254 L325 318 L181 321 Z"/>
+<path d="M365 264 L492 222 L479 264 L406 301 Z"/>
+<path d="M625 201 L787 253 L753 277 L636 250 Z"/>
+<path d="M881 297 L1007 231 L1025 315 L903 305 Z"/>
+<path d="M165 395 L304 385 L273 454 L217 466 Z"/>
+<path d="M846 366 L1009 398 L982 451 L840 469 Z"/>
+</g><g id="roads"></g><g id="nodes"></g><g id="facilities"></g><g id="vehicles"></g></svg></div>
+<div class="footer-row"><div id="road-status" class="feedback" role="status" aria-live="polite">Click a road to cycle clear → partial → blocked. Keyboard: Tab, then Enter or Space.</div><div class="dev-controls"><button id="dev-run" type="button">Start Simulation</button><button id="reset" type="button">Reset roads</button></div></div>
+</main>
+<aside class="decision-panel" aria-label="Live Decision Dashboard">
+<div class="decision-heading"><h2>Live decisions</h2><button id="verify-log" type="button">Verify Log</button></div>
+<div id="fleet-status" aria-label="Current ambulance status"></div><p id="playback-note">Playback 1× · Pause to read decisions.</p>
+<p id="verify-result" role="status">No entries yet.</p>
+<p class="log-note">Local SHA-256 chain. Reload clears this session.</p>
+<ol id="decision-log" aria-label="Timestamped decisions"></ol>
+<details id="audit-dev" hidden><summary>Demo tools</summary><button id="tamper-log" type="button">Corrupt entry 2</button><p>Changes stored text without updating its hash. Reload to restore.</p></details>
+</aside></div>
+<div class="notes"><span><strong>Illustrative patients, hospital inventories and road network.</strong> Scenario inspired by the Satya Niketan collapse.</span><span><span id="run-note">Ready to start.</span></span></div>
+</div>
+<noscript>This scene requires JavaScript. Enable it and reopen the file.</noscript>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

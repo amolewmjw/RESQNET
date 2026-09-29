@@ -1,0 +1,117 @@
+PASS structure.test.cjs
+PASS phase2.test.cjs
+PASS phase3.test.cjs
+PASS phase4.test.cjs
+PASS phase45.test.cjs
+PASS phase5.test.cjs
+PASS road-geometry.test.cjs
+PASS jitter-forensics.test.cjs
+PASS playback-status.test.cjs
+PASS phase6-ui.test.cjs
+PASS phase4-collision.test.cjs (compatibility alias for road-geometry.test.cjs)
+Files: 11 PASS, 0 FAIL; integrity errors: 0
+
+PASS structure.test.cjs
+PASS 6 external scripts and stylesheet resolve in original order
+PASS reconstructed HTML, JavaScript and CSS byte-identical to approved Phase 6 baseline
+
+PASS phase2.test.cjs
+PASS data model: 13 patients, 4 ambulances, 4 hospitals; independent reservations and cargo
+  clear cost = 460.201405
+PASS clear map: H1>J2>J6>INC, independently summed cost
+  detour cost = 476.346860
+PASS partial road: H1>J2>J3>INC; full road: same valid detour
+PASS partial cost multiplier is 3; blocked single-edge graph returns null
+  mid-edge cost = 257.581158
+PASS mid-edge: exact interpolated start, remaining cost, completes newly blocked edge
+PASS unreachable graph split returns null for node and mid-edge starts
+PASS position boundaries, same-node path and malformed-input errors
+PASS all 225 node pairs agree with Floyd-Warshall on clear and disrupted maps
+8/8 tests passed. No DOM, browser or server used.
+
+PASS phase3.test.cjs
+  tick=9; delivered=13; trips=7; flagged under-resourced patients=2
+  final [ICU,blood,vent,beds]: H1=[1,0,0,1] H2=[0,2,0,4] H3=[0,1,0,0] H4=[0,0,1,2]
+PASS 13-patient run: exact final stocks, 7 trips, no waiting/reserved patients
+PASS last-unit race: second ambulance selects another hospital before any delivery
+PASS blocked resource hospital: zero-capacity fallback delivers and flags without negative stock
+PASS dual-resource fallback: complete pairs outrank abundant single resource; ties use route cost
+PASS oversized group: 5 patients split into 2+2+1, counters drop only on pickup
+PASS all hospital roads blocked after selection: stuck retains cargo/reservation, road change retries
+PASS no hospital reachable at pickup: selection retries after road change
+PASS unreachable incident: claims remain reserved until route restoration and physical pickup
+8/8 dispatch tests passed. Invariants checked after every tick. No DOM, browser or server used.
+
+PASS phase4.test.cjs
+  speed=2: t=1 -> (1.2,1.6); t=2.5 -> (3,4); t=3 -> (4,4); t=5.5 -> (9,4)
+PASS piecewise interpolation: samples at start, mid-edge, junction, next edge and end
+PASS zero-length edges, single-node paths and invalid elapsed time
+PASS dispatch -> motion -> loading -> pickup: continuous position and correct on-site timing
+PASS arrival -> delivery -> reassignment starts at hospital, never teleports back
+PASS frame partition consistency before a transition, and no overshoot after a long frame
+  frames=1793; delivered=13; on-site=0; under-resourced=2; all vehicles idle
+PASS 13-patient animated run completes with per-frame speed bounds and inventory/counter changes
+6/6 animation logic tests passed. Visual smoothness, heartbeat and badges require a human browser check.
+
+PASS phase45.test.cjs
+PASS queued entries retain order; SHA-256 matches independent Node hash
+  untouched: 4 verified; altered: FAIL at entry 2
+PASS tampered entry is detected and located exactly at entry 2
+PASS modified hash, broken link, reorder and truncation are detected
+  44 chained entries; 13 delivered; 2 under-resourced
+PASS full animated run logs decisions, all candidates, reassignment and stock changes
+PASS minute snapshots continue without decisions while vehicles are stuck
+PASS unreachable hospital reasons and road-restoration reroutes are logged
+PASS edge-bound glyphs: co-located offsets are perpendicular and capped at 6px
+7/7 Phase 4.5 and glyph tests passed.
+
+PASS phase5.test.cjs
+  blockage=1; route=O>B>D>I; optimal cost=37.360680
+  blockage=2; route=O>B>D>I; optimal cost=37.360680
+PASS future partial/full blockage: optimal detour from exact mid-edge position
+PASS currently crossed edge completes before reroute, including long-frame boundary
+PASS all onward routes blocked: stuck holds exact midpoint; unblocking retries next tick
+PASS current-edge deferral uses latest graph and becomes stuck at next node
+PASS unrelated road change does not reroute active path
+PASS loaded ambulance preserves cargo/reservations through blocked route and recovery
+  4 entries verified; altered reroute detected at entry 4
+PASS reroutes with old/new paths are hash chained; corruption still reports both hashes
+PASS mid-edge optimal cost preserves the partial-road entry penalty
+  full disrupted run: 4505 frames, 18020 positions; max distance=6.000000000px; 13 delivered; 91 entries verified
+PASS four-ambulance disrupted run: continuous core positions, capped rendering, completion and valid chain
+9/9 Phase 5 tests passed; 255 disrupted frame/position checks; maximum segment distance=0.000000000px; zero violations.
+
+PASS road-geometry.test.cjs
+PASS full run dwell=0.7: 1793 frames, every vehicle within 6px of its actual segment
+PASS full run dwell=12: 4505 frames, every vehicle within 6px of its actual segment
+PASS all 21 graph edges, both directions, 601 samples/direction; shortest=61.032778px
+PASS synthetic 0.25px stub and zero-length segment
+PASS fixed sides under repeated/reordered co-location; no old proximity-threshold jitter; 25084 stable-edge motion checks, max step=1.166667px
+RESULT full-run frames=6298, full-run maximum=6.000000000px; total frames=32742, checked positions=132172, all-edge maximum=6.000000000px; violations=0
+
+PASS jitter-forensics.test.cjs
+PASS entry 2 exposes full recorded hash and independently verified recomputed hash
+PASS broken-link failure also displays recorded and expected previous hashes
+2/2 forensic checks passed. Browser verification not claimed.
+
+PASS playback-status.test.cjs
+PASS identical timestamps, entry data and every hash at Demo/Normal/Fast; durations 298.83/29.88/7.48 real seconds
+PASS default Normal (original 1×), pause, resume and speed changes
+PASS persistent holding/loading/idle explanations
+3/3 playback/status tests passed.
+
+PASS phase6-ui.test.cjs
+PASS idle gating, start label and Normal 1x default
+PASS start action and running instructions
+PASS disconnected roads explain holding without false completion
+PASS road recovery and complete summary: Response complete · Delivered 13/13 · Under-resourced 2 · Elapsed 00:31 · Delivery trips 7 · Reload to restart.
+PASS real intact and corrupt log button handlers retain forensic mismatch
+5/5 Phase 6 DOM-handler checks passed (no browser layout claims).
+
+PASS phase4-collision.test.cjs (compatibility alias for road-geometry.test.cjs)
+PASS full run dwell=0.7: 1793 frames, every vehicle within 6px of its actual segment
+PASS full run dwell=12: 4505 frames, every vehicle within 6px of its actual segment
+PASS all 21 graph edges, both directions, 601 samples/direction; shortest=61.032778px
+PASS synthetic 0.25px stub and zero-length segment
+PASS fixed sides under repeated/reordered co-location; no old proximity-threshold jitter; 25084 stable-edge motion checks, max step=1.166667px
+RESULT full-run frames=6298, full-run maximum=6.000000000px; total frames=32742, checked positions=132172, all-edge maximum=6.000000000px; violations=0
