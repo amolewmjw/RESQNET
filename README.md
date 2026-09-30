@@ -10,6 +10,7 @@
 | Problem statement | Intelligent and Transparent Disaster Relief Resource Allocation |
 | Implemented scenario | Building Collapse |
 | Architecture | Static frontend — HTML, CSS and vanilla JavaScript |
+| Live demo | <https://amolewmjw.github.io/RESQNET/> |
 
 ## Abstract
 
@@ -68,7 +69,7 @@ Scripts are intentionally loaded as ordinary scripts in their original order. Th
 
 ## Demo and screenshots
 
-The final recording and screenshots will be added by the team. No placeholder images or unverified live links are presented as finished deliverables.
+The live simulation is deployed and verified at <https://amolewmjw.github.io/RESQNET/>. The final screen-recording and screenshots are still pending from the team; no placeholder media is included.
 
 Place the recording at `media/demo.mp4` and screenshots in `media/screenshots/`. Follow [media instructions](media/README.md) to add working README links and a direct video URL for the PPT. See the [demo walkthrough](docs/demo-and-deployment.md).
 
@@ -85,10 +86,10 @@ Place the recording at `media/demo.mp4` and screenshots in `media/screenshots/`.
 
 ## Deployment
 
-This package is prepared for static GitHub Pages hosting but has not been deployed. Publish from the branch root, where `index.html` resides. See [deployment steps](docs/demo-and-deployment.md). Upload the extracted contents, not just the ZIP or `index.html` alone.
+Deployed via GitHub Pages: **<https://amolewmjw.github.io/RESQNET/>**, published from the branch root (`index.html` sits alongside `README.md`, `assets`, `tests` and `docs`). See [deployment record](docs/demo-and-deployment.md) for how it was published and how to redeploy if the build changes.
 
 ## Project status
 
-Phase 6 behavior was accepted by the user after local runs covering live road changes, playback controls and Verify Log. This repository is a structural extraction of that approved build. Automated checks prove exact reconstruction of the original HTML/CSS/JS and exercise the production files. A fresh browser smoke test of the extracted repository and final hosted URL remains a release step.
+Phase 6 behavior was accepted by the user after local runs covering live road changes, playback controls and Verify Log. This repository is a structural extraction of that approved build. Automated checks prove exact reconstruction of the original HTML/CSS/JS and exercise the production files. A fresh browser smoke test of both the extracted repository and the final hosted URL has since been completed — the live page loads correctly, matches the local build, and all interactive elements (road blocking, playback controls, Verify Log) are present and functional.
 
 The team's licensing decision is not specified in this package; no open-source license has been assumed.

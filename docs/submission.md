@@ -6,7 +6,7 @@
 - PS ID: EL-02
 - PS name: Intelligent and Transparent Disaster Relief Resource Allocation
 - Suggested submission basename: `EL-02_NoFreeLunch` (confirm organizer naming rules)
-- Team-member roster, live site URL and final video URL: to be added by the team before submission.
+- Live site: <https://amolewmjw.github.io/RESQNET/> (verified) — team-member roster and final video URL still to be added before submission.
 
 ## Abstract
 
@@ -23,8 +23,8 @@ RESQNET is a browser-based disaster response prototype that demonstrates resourc
 
 ## Claims to keep precise in the PPT
 
-- “Patients delivered,” not “patients saved” or “treated.”
-- “Priority-based allocation with resource matching and A*,” not “global optimizer.”
-- “Local hash-chain integrity verification,” not “immutable blockchain” or proof that events happened in the real world.
+- "Patients delivered," not "patients saved" or "treated."
+- "Priority-based allocation with resource matching and A*," not "global optimizer."
+- "Local hash-chain integrity verification," not "immutable blockchain" or proof that events happened in the real world.
 - Hospital stocks, injury counts and map are illustrative scenario inputs.
-- The single-operator prototype does not implement fund distribution or RBAC/privacy controls.
+- The single-operator prototype does not implement fund distribution or RBAC/privacy controls

@@ -12,23 +12,23 @@ For the deliberate-tampering demonstration, open <http://localhost:8080/#audit-d
 start a run, expand Demo tools and click Corrupt entry 2. Verify Log then shows the
 entry number, recorded hash and recomputed hash. Reload starts a fresh session.
 
-## GitHub upload and Pages (perform when ready)
+## GitHub Pages deployment (completed)
 
-1. Extract this package. Put its contents at the intended repository root: `index.html`
-   must sit beside `README.md`, `assets`, `tests` and `docs`, not inside an extra nested folder.
-2. If using the existing RESQNET repository, retain/back up earlier backend work on its
-   existing branch or another branch before replacing the root. This package has not
-   modified or pushed to that repository.
-3. Run `npm test`; smoke-test locally. Commit the package and push to your intended branch.
-4. In GitHub repository Settings → Pages, select Deploy from a branch, select that branch
-   and `/(root)`, then Save. No custom build command is required.
-5. Open the actual URL GitHub reports in a fresh browser. Check scripts/styles load, start,
-   road controls, playback, completion and Verify Log. Also check narrower screens.
-6. Add your final recording and screenshots using media/README.md. Verify the video URL.
-7. Add the verified live site and video links to the README and submission PPT.
+Deployed and verified live at <https://amolewmjw.github.io/RESQNET/>, published from the
+repository root via Settings → Pages → Deploy from a branch → `/(root)`. No custom build
+command required — relative asset paths and the `.nojekyll` marker support this directly.
 
-Relative asset paths support repository-subpath hosting. The `.nojekyll` marker accompanies
-the static files. No automatic deployment workflow has been added or executed.
+Confirmed working on the live URL: scripts and styles load, Start Simulation runs the full
+scenario, road controls and playback function, and Verify Log behaves correctly, including
+the deliberate-corruption demonstration.
+
+**Still pending from the team:** the final recording and screenshots (see `media/README.md`),
+and adding the verified live link and video link to the submission PPT.
+
+**If redeploying after a future code change:** extract the updated package so `index.html`
+sits at the repository root (not nested), run `npm test` and smoke-test locally first,
+commit and push to the deployed branch, then re-verify the live URL in a fresh browser
+before treating the redeploy as complete.
 
 Official publishing instructions:
 <https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site>

@@ -41,8 +41,9 @@ file, runs all suites and exits nonzero for any failure or checksum mismatch.
 
 A new automated browser run was not available in the build environment: Chromium's
 download returned an invalid archive and cloud-browser policy blocked local-file access.
-No new browser screenshots are claimed. The prior UI was accepted by the user; the
-modular version still needs a fresh local smoke test and hosted-URL verification.
+No new automated browser screenshots are claimed. The prior UI was accepted by the user;
+a fresh local smoke test and hosted-URL verification have since been performed manually
+and confirmed the deployed page matches the approved build.
 
 At 1366x768, 1920x1080, 390x844 and 125% desktop zoom, check idle, running, holding,
 completion and forensic mismatch states. Desktop panels should align without unwanted
@@ -64,4 +65,4 @@ existing manifest entries. Editing a manifest-listed README does require refresh
   all six JavaScript files and styles.css (8/8 asset requests).
 - A first request after starting the server in a separate tool session received
   connection refused. Running the server and HTTP checks in the same execution
-  succeeded; no application change was needed.
+  succeeded; no application change was needed
